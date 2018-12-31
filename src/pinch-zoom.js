@@ -733,9 +733,8 @@ var definePinchZoom = function() {
             this.setupOffsets()
             if (this.options.setInitialZoomOnLoad) {
               this.setInitialZoom()
+              return
             }
-
-            return
           }
 
           var zoomFactor = this.getInitialZoomFactor() * this.zoomFactor

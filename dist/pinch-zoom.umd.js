@@ -106,7 +106,7 @@
      */
     var PinchZoom = function PinchZoom(el, options) {
       this.el = el;
-      this.zoomFactor = options.initialZoomFactor || 1;
+      this.zoomFactor = 1;
       this.lastScale = 1;
       this.offset = {
         x: 0,
@@ -499,6 +499,8 @@
         var xZoomFactor = this.container.offsetWidth / this.el.offsetWidth;
         var yZoomFactor = this.container.offsetHeight / this.el.offsetHeight;
 
+        // debugger
+
         return Math.min(xZoomFactor, yZoomFactor);
       },
 
@@ -660,6 +662,30 @@
         }
       },
 
+      setInitialZoom: function setInitialZoom() {
+        this.scaleZoomFactor(this.options.tapZoomFactor);
+
+        this.addOffset({
+          x: this.el.clientWidth / 2,
+          y: this.el.clientHeight / 2
+        });
+
+        var zoomFactor = this.getInitialZoomFactor() * this.zoomFactor;
+
+        var offsetX = -this.offset.x / zoomFactor;
+        var offsetY = -this.offset.y / zoomFactor;
+
+        var transform2d = 'scale(' + zoomFactor + ', ' + zoomFactor + ') ' + 'translate(' + offsetX + 'px,' + offsetY + 'px)';
+
+        this.el.style.webkitTransform = transform2d;
+        this.el.style.mozTransform = transform2d;
+        this.el.style.msTransform = transform2d;
+        this.el.style.oTransform = transform2d;
+        this.el.style.transform = transform2d;
+
+        this.is3d = false;
+      },
+
       /**
        * Updates the css values according to the current zoom factor and offset
        */
@@ -671,7 +697,6 @@
 
         window.setTimeout(function () {
           this.updatePlaned = false;
-
           if (event && event.type === 'resize') {
             this.updateAspectRatio();
             this.setupOffsets();
@@ -680,12 +705,17 @@
           if (event && event.type === 'load') {
             this.updateAspectRatio();
             this.setupOffsets();
+            if (this.options.setInitialZoomOnLoad) {
+              this.setInitialZoom();
+              return;
+            }
           }
 
-          var zoomFactor = this.getInitialZoomFactor() * this.zoomFactor,
-              offsetX = -this.offset.x / zoomFactor,
-              offsetY = -this.offset.y / zoomFactor,
-              transform3d = 'scale3d(' + zoomFactor + ', ' + zoomFactor + ',1) ' + 'translate3d(' + offsetX + 'px,' + offsetY + 'px,0px)',
+          var zoomFactor = this.getInitialZoomFactor() * this.zoomFactor;
+          var offsetX = -this.offset.x / zoomFactor;
+          var offsetY = -this.offset.y / zoomFactor;
+
+          var transform3d = 'scale3d(' + zoomFactor + ', ' + zoomFactor + ',1) ' + 'translate3d(' + offsetX + 'px,' + offsetY + 'px,0px)',
               transform2d = 'scale(' + zoomFactor + ', ' + zoomFactor + ') ' + 'translate(' + offsetX + 'px,' + offsetY + 'px)',
               removeClone = function () {
             if (this.clone) {
